@@ -80,7 +80,7 @@ void  Plan::addFacility(Facility* facility){ //  האם עוד מישהו משת
     ans += "PlanStatus: " + (status == PlanStatus::AVALIABLE ? "AVALIABLE" : "BUSY") + "\n";
     ans += "SelectionPolicy: " + selectionPolicy->toString() + "\n"; 
     ans += "LifeQualityScore: " + std::to_string(life_quality_score) + "\n";
-    ans += "EconomyScore: " + std::to_string(economy_score) + "\n";
+    ans += "EconomyScore: " + std::to_string(economy_score) + "\n"; 
     ans += "EnvironmentScore: " + std::to_string(environment_score) + "\n";
 
     // Print  The Facility details
@@ -100,11 +100,11 @@ void  Plan::addFacility(Facility* facility){ //  האם עוד מישהו משת
     //copy constractur
 Plan::Plan(const Plan &other):
     plan_id(other.plan_id),
-      facilityOptions(other.facilityOptions),
-      status(other.status),
-      life_quality_score(other.life_quality_score),
-      economy_score(other.economy_score),
-      environment_score(other.environment_score) {
+    facilityOptions(other.facilityOptions),
+    status(other.status),
+    life_quality_score(other.life_quality_score),
+    economy_score(other.economy_score),
+    environment_score(other.environment_score) {
     settlement = new Settlement(*other.settlement); // Deep copy of settlement
     selectionPolicy = other.selectionPolicy->clone(); // Deep copy of selectionPolicy
 
@@ -117,34 +117,34 @@ Plan::Plan(const Plan &other):
     }
 }
 // copy assingment
-Plan &Plan::operator=(const Plan &other) {
+Plan& Plan::operator=(const Plan &other) {
     if (this != &other) {
-
-    plan_id = other.plan_id;
-    status = other.status;
-    life_quality_score = other.life_quality_score;
-    economy_score = other.economy_score;
-    environment_score = other.environment_score;
-    facilityOptions = other.facilityOptions;
-    delete this->settelment;
-    settlement = new Settlement(*other.settlement);
-    delete selectionPolicy;
-    selectionPolicy = other.selectionPolicy->clone();
-    for (Facility* facility : underConstruction) {
-        delete facility;
+        plan_id = other.plan_id;
+        status = other.status;
+        life_quality_score = other.life_quality_score;
+        economy_score = other.economy_score;
+        environment_score = other.environment_score;
+        facilityOptions = other.facilityOptions;
+        delete this->settelment;
+        settlement = new Settlement(*other.settlement);
+        delete selectionPolicy;
+        selectionPolicy = other.selectionPolicy->clone();
+        for (Facility* facility : underConstruction) {
+            delete facility;
+        }
+        underConstruction.clear(); 
+        for (Facility* facility : other.underConstruction) {
+            underConstruction.push_back(new Facility(*facility));
+        } 
+        for (Facility* facility : facilities) {
+            delete facility;
+        }
+        facilities.clear();  // נקה את הוקטור כדי להימנע מהפניות ישנות
+        for (Facility* facility : other.facilities) {
+            facilities.push_back(new Facility(*facility));
+        return *this;
     }
-    underConstruction.clear(); 
-    for (Facility* facility : other.underConstruction) {
-         underConstruction.push_back(new Facility(*facility));
-    } 
-    for (Facility* facility : facilities) {
-         delete facility;
-    }
-    facilities.clear();  // נקה את הוקטור כדי להימנע מהפניות ישנות
-    for (Facility* facility : other.facilities) {
-        facilities.push_back(new Facility(*facility));
-
-    }
+}
 //Destractor
 Plan:: ~Plan(){
     delete settlement;
