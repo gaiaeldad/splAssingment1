@@ -13,6 +13,8 @@ class SelectionPolicy;
 class Simulation {
     public:
         Simulation(const string &configFilePath);
+        Simulation(const Simulation &other); //we added copy constractor
+        Simulation& operator=(const Simulation &other);// we added copy assingment operator
         void start();
         void addPlan(const Settlement *settlement, SelectionPolicy *selectionPolicy);
         void addAction(BaseAction *action);
@@ -24,6 +26,7 @@ class Simulation {
         void step();
         void close();
         void open();
+        ~Simulation(); //we added distractor
 
     private:
         bool isRunning;
