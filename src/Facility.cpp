@@ -64,9 +64,10 @@ void Facility:: setStatus(FacilityStatus status){
 }
 
 
-const FacilityStatus Facility:: getStatus() const {
+const FacilityStatus& Facility::getStatus() const {
     return status;
 }
+
 
 
 
