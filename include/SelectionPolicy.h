@@ -10,6 +10,7 @@ class SelectionPolicy {
         virtual const string toString() const = 0;
         virtual SelectionPolicy* clone() const = 0;
         virtual ~SelectionPolicy() = default;
+        static SelectionPolicy* createNewSP(const string& selectionPolicyType); //we added
 };
 
 class NaiveSelection: public SelectionPolicy {
