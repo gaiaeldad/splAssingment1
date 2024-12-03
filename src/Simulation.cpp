@@ -7,10 +7,32 @@
 #include "SelectionPolicy.h"
 #include "Action.h"
 #include <iostream>
+#include <fstream>
+#include "Auxiliary.h"
+#include <string>
 using std::string;
 using std::vector;
 using std::cout;
 using std::endl;
+
+
+SettlementType intToSettlementType(int type) {//we added this - local use 
+    switch (type) {
+        case 0: return SettlementType::VILLAGE;
+        case 1: return SettlementType::CITY;
+        case 2: return SettlementType::METROPOLIS;
+        default: throw std::invalid_argument("Invalid SettlementType: " + std::to_string(type));
+    }
+}
+FacilityCategory intToFacilityCategory(int category) {
+    switch (category) {
+        case 0: return FacilityCategory::LIFE_QUALITY;
+        case 1: return FacilityCategory::ECONOMY;
+        case 2: return FacilityCategory::ENVIRONMENT;
+        default: throw std::invalid_argument("Invalid FacilityCategory: " + std::to_string(category));
+    }
+}
+
 
 Simulation::Simulation(const string &configFilePath){
     std::ifstream configFile(configFilePath);
@@ -37,15 +59,17 @@ Simulation::Simulation(const string &configFilePath){
         if (prefix == "settlement") {
             if (args.size() < 3) continue;  // Skip invalid lines
             std::string settlementName = args[1];
-            int settlementType = std::stoi(args[2]);  // Convert type from string to int
+            int settlementTypeInt = std::stoi(args[2]);  // Convert type from string to int
+            SettlementType settlementType = intToSettlementType(settlementTypeInt);
             // Create a new Settlement object
             Settlement* settlement = new Settlement(settlementName, settlementType);
             settlements.push_back(settlement);
 
         } else if (prefix == "facility") {
             if (args.size() < 6) continue;  // Skip invalid lines
-            std::string facilityName = args[1];
-            int category = std::stoi(args[2]);
+            std::string facilityName = std::string(args[1]);
+            int categoryint = std::stoi(args[2]);
+            FacilityCategory category = intToFacilityCategory(categoryint);
             int price = std::stoi(args[3]);
             int lifeqImpact = std::stoi(args[4]);
             int ecoImpact = std::stoi(args[5]);
@@ -64,7 +88,7 @@ Simulation::Simulation(const string &configFilePath){
 
                 // Create the Plan object and add it to the plans vector
                 std::string policyType = args[2];
-                SelectionPolicy* policy = createNewSP(policyType);
+                SelectionPolicy* policy = SelectionPolicy::createNewSP(policyType);
                 addPlan(settlement, policy);  // This function assumes addPlan is already implemented
             }
         }
@@ -108,20 +132,16 @@ Simulation& Simulation::operator = (const Simulation &other){ // we added copy a
         return *this;   
     } 
 }
- void Simulation:: start() {
+ void Simulation:: start() {// need to write this 
     isRunning = true;
     cout<< "The Simulation has started" <<endl;
+    //need to loop here
+    //try chatch - חריגות אם מריצים ובמקום שהכל יקרוס שיגד לי מה הבעיה בתוך הלולאה יש משהו שנקרא טרי קאטץ לעשות בכל שלב שאם לא תקין שיזרוק הערה  
  }
 
-void Simulation::addPlan(const Settlement *settlement, SelectionPolicy *selectionPolicy){// not sure we have the method getpolicy 
-//check that is a valid selection policy and that the settelment doesnt allready exsits
-    std::vector<std::string> validSelectionPolicies = {"nve", "bal", "eco", "env"};
-    bool isValidPolicy = std::find(validSelectionPolicies.begin(), validSelectionPolicies.end(), selectionPolicy->getPolicy()) != validSelectionPolicies.end();
-    
-    if (!isValidPolicy || isSettlementExists(settlement->getName())) {
-        throw std::out_of_range("Cannot create this plan");
-    }
-     plans.push_back(Plan(planCounter++, *settlement, selectionPolicy, facilitiesOptions));
+void Simulation::addPlan(const Settlement *settlement, SelectionPolicy *selectionPolicy){
+     plans.push_back(Plan(planCounter, *settlement, selectionPolicy, facilitiesOptions));
+     planCounter++;
 }
 
 void Simulation::addAction(BaseAction *action){
@@ -179,7 +199,7 @@ Plan& Simulation::getPlan(const int planID){
             return currPlan;
         }
     } 
-    return nullptr;
+     throw std::out_of_range("Plan with the given ID not found.");
 }
 
  void Simulation::step(){//not sure if this is correct 
@@ -220,3 +240,4 @@ int Simulation:: getplanCounter() const{
 vector<BaseAction*> Simulation::getActionLog(){
     return actionsLog;
 }
+

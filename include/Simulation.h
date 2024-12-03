@@ -6,10 +6,13 @@
 #include "Settlement.h"
 #include "SelectionPolicy.h"
 #include "Action.h"
+#include "Auxiliary.h"
+#include <fstream>
 using std::string;
 using std::vector;
 using std::cout;
 using std::endl;
+
 class BaseAction;
 class SelectionPolicy;
 

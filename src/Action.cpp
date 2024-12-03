@@ -127,7 +127,7 @@ BaseAction(), facilityName(facilityName) ,facilityCategory(facilityCategory), pr
 
 
 
-void AddFacility::act(Simulation &simulation){
+void AddFacility::act(Simulation &simulation){///guy will send this to us need to fix everything 
     const string &SettlementName = simulation.
 FacilityType newFac = Facility(facilityName, Settlementname-"what to put here?" , facilityCategory,price,lifeQualityScore,economyScore,environmentScore);
 }

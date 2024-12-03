@@ -4,11 +4,11 @@
 all: clean compile link
 
 clean:
-	rm -f bin/*.o
+	rm -f bin/*
 
-link: 
+link:
 	@echo "Linking Object files"
-	g++ -o settlement.o bin/main bin/main.o Auxiliary.o Faciliy.o SelectionPolicy.o plan.o Simulation.o Action.o
+	g++ -o  bin/simulation bin/settlement.o bin/main.o bin/Auxiliary.o bin/Faciliy.o bin/SelectionPolicy.o bin/plan.o bin/Simulation.o bin/Action.o
 
 compile: 
 	@echo "Compiling source code"
