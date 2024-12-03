@@ -111,14 +111,13 @@ void  Plan::addFacility(Facility* facility){
     //copy constractur
 Plan::Plan(const Plan &other):
     plan_id(other.plan_id),
-    facilityOptions(other.facilityOptions),
+    settlement(other.settlement),
+    selectionPolicy(other.selectionPolicy ? other.selectionPolicy->clone() : nullptr),// Deep copy of selectionPolicy
     status(other.status),
+    facilityOptions(other.facilityOptions),
     life_quality_score(other.life_quality_score),
     economy_score(other.economy_score),
-    environment_score(other.environment_score),
-    settlement(other.settlement),
-    selectionPolicy(other.selectionPolicy ? other.selectionPolicy->clone() : nullptr) { // Deep copy of selectionPolicy
-
+    environment_score(other.environment_score){ 
     // Deep copy of facilities and underConstruction
     for (Facility* facility : other.underConstruction) {
         underConstruction.push_back(new Facility(*facility));

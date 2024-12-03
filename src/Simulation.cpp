@@ -5,32 +5,12 @@
 #include "Settlement.h"
 #include "Simulation.h"
 #include "SelectionPolicy.h"
+#include "Action.h"
 #include <iostream>
 using std::string;
 using std::vector;
 using std::cout;
 using std::endl;
-
- Plan& Plan::operator=(const Plan &other) {//new implemntation shaked 
-    if (this != &other) {
-        // Allocate new resources for settlement and selectionPolicy
-        Settlement* tempSettlement = new Settlement(*other.settlement);
-        SelectionPolicy* tempPolicy = other.selectionPolicy->clone();
-
-        // Delete old resources
-        delete settlement;
-        delete selectionPolicy;
-
-        // Assign new resources
-        settlement = tempSettlement;
-        selectionPolicy = tempPolicy;
-
-        // Assign scalar and simple values
-        plan_id = other.plan_id;
-        status = other.status;
-        life_quality_score = other.life_quality_score;
-        economy_score = other.economy_score;
-        environment_score = other.environment_score;
 
 Simulation::Simulation(const string &configFilePath){
     std::ifstream configFile(configFilePath);
@@ -105,7 +85,7 @@ Simulation::Simulation(const Simulation &other): //we added copy constractor
         settlements.push_back(new Settlement(*currSet));
     }
 }
-Simulation& Simulation::operator=(const Simulation &other){ // we added copy assingment operator
+Simulation& Simulation::operator = (const Simulation &other){ // we added copy assingment operator
     if (this != &other) {
         isRunning = other.isRunning;
         planCounter = other.planCounter;
@@ -193,34 +173,34 @@ Settlement* Simulation::getSettlement(const string &settlementName){
     return nullptr;
  }
 
-    Plan& Simulation::getPlan(const int planID){
-        for (Plan& currPlan : this->plans){
-            if (currPlan.getPlanID() == planID){
-                return currPlan;
-            }
-        } 
-        return nullptr;
+Plan& Simulation::getPlan(const int planID){
+    for (Plan& currPlan : this->plans){
+        if (currPlan.getPlanID() == planID){
+            return currPlan;
+        }
+    } 
+    return nullptr;
+}
+
+ void Simulation::step(){//not sure if this is correct 
+    open();
+    for (Plan& planrunning : plans){
+         planrunning.step();
     }
+    close();
+}
 
-        void Simulation::step(){//not sure if this is correct 
-            open();
-            for (Plan& planrunning : plans){
-                planrunning.step();
-            }
-            close();
-        }
-
-        void Simulation::close(){
-             for ( const Plan& planrunning : plans){
-                cout<< planrunning.toString()<< endl;
-            }
-            isRunning = false;
-        }
+ void Simulation::close(){
+    for ( const Plan& planrunning : plans){
+         cout<< planrunning.toString()<< endl;
+    }
+    isRunning = false;
+}
 
 
-        void Simulation::open(){
-            isRunning = true; 
-        }
+void Simulation::open(){
+    isRunning = true; 
+}
 
 
 //desrtactor
