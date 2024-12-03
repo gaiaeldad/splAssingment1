@@ -31,6 +31,6 @@ string SettlementTypeToString(SettlementType type){
     return "Settlement:" + name + ", Type: " + SettlementTypeToString(type);
  }
 
-  const int Settlement::getLimit(){//we added
+  const int Settlement::getLimit() const {//we added
    return limit;
  }

@@ -18,7 +18,7 @@ class Settlement {
         const string &getName() const;
         SettlementType getType() const;
         const string toString() const;
-        const int getLimit(); //we added
+        const int getLimit() const; //we added
     
 
         private:

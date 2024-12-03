@@ -147,6 +147,21 @@ SustainabilitySelection* SustainabilitySelection:: clone() const {
     return new SustainabilitySelection(*this);
 }
 
+
 //SustainabilitySelection::~SustainabilitySelection() = default; 
-    
+// helper metodes we added
+SelectionPolicy* SelectionPolicy::createNewSP(const string& selectionPolicyType){
+    SelectionPolicy* policy = nullptr;
+    if (selectionPolicyType == "eco") {
+        policy = new EconomySelection();
+    } else if (selectionPolicyType == "bal") {
+        policy = new BalancedSelection(0, 0, 0);
+    } else if (selectionPolicyType == "sus") {
+        policy = new SustainabilitySelection();
+    } else {
+
+        return nullptr;
+    }
+    return policy;
+}    
 

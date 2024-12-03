@@ -4,29 +4,36 @@
 #include "Facility.h"
 #include "Plan.h"
 #include "Settlement.h"
+#include "SelectionPolicy.h"
+#include "Action.h"
 using std::string;
 using std::vector;
-
+using std::cout;
+using std::endl;
 class BaseAction;
 class SelectionPolicy;
 
 class Simulation {
     public:
-        Simulation(const string &configFilePath);
-        Simulation(const Simulation &other); //we added copy constractor
-        Simulation& operator=(const Simulation &other);// we added copy assingment operator
-        void start();
-        void addPlan(const Settlement *settlement, SelectionPolicy *selectionPolicy);
-        void addAction(BaseAction *action);
-        bool addSettlement(Settlement *settlement);
-        bool addFacility(FacilityType facility);
-        bool isSettlementExists(const string &settlementName);
-        Settlement *getSettlement(const string &settlementName);
-        Plan &getPlan(const int planID);
-        void step();
-        void close();
-        void open();
-        ~Simulation(); //we added distractor
+        Simulation(const string &configFilePath);//yes but problem
+        Simulation(const Simulation &other); //we added copy constractor//yes
+        Simulation& operator=(const Simulation &other);// we added copy assingment operator//yes
+        void start();//yes
+        void addPlan(const Settlement *settlement, SelectionPolicy *selectionPolicy);//yes
+        void addAction(BaseAction *action);//no
+        bool addSettlement(Settlement *settlement);//yes
+        bool addFacility(FacilityType facility);//yes
+        bool doesFacilityExists(const string &facilityName);//we added this // yes 
+        bool isSettlementExists(const string &settlementName);//yes
+        Settlement *getSettlement(const string &settlementName);//yes
+        Plan &getPlan(const int planID);//yes
+        void step();//yes// need to make sure these three functions 
+        void close();//yes
+        void open();//yes
+        ~Simulation(); //we added distractor//yes
+        int getplanCounter() const;//we added this 
+        vector<BaseAction*> getActionLog();//we added this 
+
 
     private:
         bool isRunning;

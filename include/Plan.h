@@ -3,6 +3,7 @@
 #include "Facility.h"
 #include "Settlement.h"
 #include "SelectionPolicy.h"
+# include <iostream>
 using std::vector;
 
 enum class PlanStatus {
@@ -27,11 +28,13 @@ class Plan {
         void scoreUpdate(Facility* facility);// we added
         int getPlanID(); //we added
         ~Plan(); //we added destractor
+        string getSelectionPolicy() const;//we added this 
+        bool ChangeSelectionPolicy(const string newPolicy);//we added this 
 
 
     private:
         int plan_id;
-        const Settlement *settlement;
+        const Settlement &settlement;
         SelectionPolicy *selectionPolicy; //What happens if we change this to a reference?
         PlanStatus status;
         vector<Facility*> facilities;
