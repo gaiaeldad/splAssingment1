@@ -16,7 +16,7 @@ using std::cout;
 using std::endl;
 
 
-SettlementType intToSettlementType(int type) {//we added this - local use 
+SettlementType Simulation:: intToSettlementType(int type) {//we added this - local use 
     switch (type) {
         case 0: return SettlementType::VILLAGE;
         case 1: return SettlementType::CITY;
@@ -24,7 +24,7 @@ SettlementType intToSettlementType(int type) {//we added this - local use
         default: throw std::invalid_argument("Invalid SettlementType: " + std::to_string(type));
     }
 }
-FacilityCategory intToFacilityCategory(int category) {
+FacilityCategory Simulation:: intToFacilityCategory(int category) { // we added
     switch (category) {
         case 0: return FacilityCategory::LIFE_QUALITY;
         case 1: return FacilityCategory::ECONOMY;
@@ -96,29 +96,39 @@ Simulation::Simulation(const string &configFilePath){
      configFile.close();
 }
 
-//copy constractor
-Simulation::Simulation(const Simulation &other): //we added copy constractor
+// copy constructor
+Simulation::Simulation(const Simulation &other): 
     isRunning(other.isRunning),
     planCounter(other.planCounter),
-    plans(other.plans),
-    facilitiesOptions(other.facilitiesOptions){
+    facilitiesOptions(other.facilitiesOptions){ 
     for (BaseAction* action : other.actionsLog) {
         actionsLog.push_back(action->clone());
     }
-    for (Settlement* currSet : other.settlements) {
-        settlements.push_back(new Settlement(*currSet));
+    for (Settlement* curr : other.settlements) {
+        settlements.push_back(new Settlement(*curr));
     }
+    for(Plan otherPlan : other.plans){
+        string settlementName = otherPlan.getSettlement().getName();
+        Settlement *currSettlement = getSettlement(settlementName); 
+        Plan newPlan(otherPlan.getPlanID(), *currSettlement, otherPlan.getSelectionPolicySP(), otherPlan.getFacilityOptions());
+        plans.push_back(newPlan);
+
+    }
+    planCounter = other.planCounter;
+    isRunning = other.isRunning; 
+    facilitiesOptions = other.facilitiesOptions;  
 }
-Simulation& Simulation::operator = (const Simulation &other){ // we added copy assingment operator
+
+
+Simulation& Simulation::operator= (const Simulation &other){ // we added copy assingment operator
     if (this != &other) {
         isRunning = other.isRunning;
         planCounter = other.planCounter;
         facilitiesOptions = other.facilitiesOptions;
-        plans = other.plans;
          for (BaseAction* action : actionsLog) {
             delete action;
         }
-        actionsLog.clear(); // do we have this method?
+        actionsLog.clear(); 
         for (BaseAction* action : other.actionsLog) {
             actionsLog.push_back(action->clone());
         } 
@@ -129,15 +139,111 @@ Simulation& Simulation::operator = (const Simulation &other){ // we added copy a
         for (Settlement* currSet : other.settlements) {
             settlements.push_back(new Settlement(*currSet));
         } 
+        for(Plan otherPlan : other.plans){
+            string settlementName = otherPlan.getSettlement().getName();
+            Settlement *currSettlement = getSettlement(settlementName); 
+            Plan newPlan(otherPlan.getPlanID(), *currSettlement, otherPlan.getSelectionPolicySP(), otherPlan.getFacilityOptions());
+            plans.push_back(newPlan);
+        }     
         return *this;   
     } 
 }
- void Simulation:: start() {// need to write this 
+
+ void Simulation::start() {
+    cout << "The Simulation has started" << endl;
     isRunning = true;
-    cout<< "The Simulation has started" <<endl;
-    //need to loop here
-    //try chatch - חריגות אם מריצים ובמקום שהכל יקרוס שיגד לי מה הבעיה בתוך הלולאה יש משהו שנקרא טרי קאטץ לעשות בכל שלב שאם לא תקין שיזרוק הערה  
- }
+
+    while (isRunning) {
+        try {
+            cout << "-> "; // Prompt the user
+            std::string input;
+            std::getline(std::cin, input); // Read user input
+            std::istringstream iss(input);
+            std::string command;
+            iss >> command; // Extract the first token as the command
+
+            if (command == "step") {
+                int numOfSteps;
+                iss >> numOfSteps;
+                if (iss.fail() || numOfSteps <= 0) {
+                    throw std::runtime_error("Invalid input for step");
+                }
+                SimulateStep action(numOfSteps);
+                action.act(*this);
+            } 
+            else if (command == "plan") {
+                std::string settlementName, selectionPolicy;
+                iss >> settlementName >> selectionPolicy;
+                if (settlementName.empty() || selectionPolicy.empty()) {
+                    throw std::runtime_error("Invalid input for plan");
+                }
+                AddPlan action(settlementName, selectionPolicy);
+                action.act(*this);
+            } 
+            else if (command == "settlement") {
+                std::string settlementName;
+                int settlementType;
+                iss >> settlementName >> settlementType;
+                if (settlementName.empty() || iss.fail()||settlementType<0|| settlementType>2) {
+                    throw std::runtime_error("Invalid input for settlement");
+                }
+                AddSettlement action(settlementName, static_cast<SettlementType>(settlementType));
+                action.act(*this);
+            } 
+            else if (command == "facility") {
+                std::string facilityName;
+                int category, price, lifeQ, economy, environment;
+                iss >> facilityName >> category >> price >> lifeQ >> economy >> environment;
+                if (facilityName.empty() || iss.fail()|| price<0||lifeQ<0||economy<0||environment<0) {
+                    throw std::runtime_error("Invalid input for facility");
+                }
+                AddFacility action(facilityName, static_cast<FacilityCategory>(category), price, lifeQ, economy, environment);
+                action.act(*this);
+            } 
+            else if (command == "planStatus") {
+                int planId;
+                iss >> planId;
+                if (iss.fail()) {
+                    throw std::runtime_error("Invalid input for planStatus");
+                }
+                PrintPlanStatus action(planId);
+                action.act(*this);
+            } 
+            else if (command == "changePolicy") {
+                int planId;
+                std::string newPolicy;
+                iss >> planId >> newPolicy;
+                if (iss.fail() || newPolicy.empty()) {
+                    throw std::runtime_error("Invalid input for changePolicy");
+                }
+                ChangePlanPolicy action(planId, newPolicy);
+                action.act(*this);
+            } 
+            else if (command == "log") {
+                PrintActionsLog action;
+                action.act(*this);
+            } 
+            else if (command == "backup") {
+                BackupSimulation action;
+                action.act(*this);
+            } 
+            else if (command == "restore") {
+                RestoreSimulation action;
+                action.act(*this);
+            } 
+            else if (command == "close") {
+                Close action;
+                action.act(*this);
+                isRunning = false; // Exit the loop
+            } 
+            else {
+                throw std::runtime_error("Unknown command");
+            }
+        } catch (const std::runtime_error &e) {
+            cout << "Error: " << e.what() << endl;
+        }
+    }
+}
 
 void Simulation::addPlan(const Settlement *settlement, SelectionPolicy *selectionPolicy){
      plans.push_back(Plan(planCounter, *settlement, selectionPolicy, facilitiesOptions));
@@ -166,17 +272,17 @@ bool Simulation::isSettlementExists(const string &settlementName){
 
  bool Simulation::addFacility(FacilityType facility){
 
-     if (doesFacilityExists(facility.getName())){
-         throw std::out_of_range("Facility already exists");
+     if (!doesFacilityExists(facility.getName())){
+        facilitiesOptions.push_back(facility);
+        return true;
      }
-             facilitiesOptions.push_back(facility);
-            return true;
+    return false;
 }
 
 bool Simulation::doesFacilityExists(const string &facilityName){
   
-    for (const FacilityType curr : facilitiesOptions){
-        if (curr.getName() == facilityName){
+    for (const FacilityType currFac : facilitiesOptions){
+        if (currFac.getName() == facilityName){
         return true;
         }
     }
@@ -194,25 +300,18 @@ Settlement* Simulation::getSettlement(const string &settlementName){
  }
 
 Plan& Simulation::getPlan(const int planID){
-    for (Plan& currPlan : this->plans){
-        if (currPlan.getPlanID() == planID){
-            return currPlan;
-        }
-    } 
-     throw std::out_of_range("Plan with the given ID not found.");
+     return plans[planID];
 }
 
- void Simulation::step(){//not sure if this is correct 
-    open();
+ void Simulation::step(){
     for (Plan& planrunning : plans){
          planrunning.step();
     }
-    close();
 }
 
  void Simulation::close(){
     for ( const Plan& planrunning : plans){
-         cout<< planrunning.toString()<< endl;
+         cout<< planrunning.closeToString()<< endl;
     }
     isRunning = false;
 }
@@ -228,10 +327,13 @@ Simulation:: ~Simulation(){
     for (BaseAction* action : actionsLog){
         delete action;
     }
+     actionsLog.clear();
     for (Settlement *settlement : settlements){
         delete settlement;
     }
+    settlements.clear();
 }
+
 
 int Simulation:: getplanCounter() const{
     return planCounter;

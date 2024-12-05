@@ -25,7 +25,10 @@ class FacilityType {
         int getEnvironmentScore() const;
         int getEconomyScore() const;
         FacilityCategory getCategory() const;
-
+        FacilityType(const FacilityType &other); // we added copy constractor
+        FacilityType &operator=(const FacilityType &other); // we added copy assignment
+        ~FacilityType();// we added destractur
+        
     protected:
         const string name;
         const FacilityCategory category;
@@ -48,6 +51,8 @@ class Facility: public FacilityType {
         void setStatus(FacilityStatus status);
         const FacilityStatus& getStatus() const;
         const string toString() const;
+        const string statusToString() const ; // we added
+
 
     private:
         const string settlementName;

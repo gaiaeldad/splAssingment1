@@ -32,6 +32,20 @@ int FacilityType::getEconomyScore() const{
     return category;
  }
 
+  //Rule Of 3:
+// Copy constructor
+FacilityType::FacilityType(const FacilityType &other)
+:FacilityType(other.name, other.category, other.price, other.lifeQuality_score,other.economy_score,other.environment_score){}
+
+// Copy assignment operator
+FacilityType &FacilityType::operator=(const FacilityType &other){
+    return *this;
+}
+// Destructor: 
+FacilityType::~FacilityType(){
+
+}
+
 //faciltiy
  Facility::Facility(const string &name, const string &settlementName, const FacilityCategory category, const int price, const int lifeQuality_score, const int economy_score, const int environment_score)
 :FacilityType(name, category, price, lifeQuality_score, economy_score, environment_score),
@@ -50,11 +64,11 @@ const int Facility::getTimeLeft() const {
 }
 
 FacilityStatus Facility:: step(){
-    if ( status == FacilityStatus::UNDER_CONSTRUCTIONS && timeLeft >0){
-        --timeLeft;
+    if (timeLeft > 0){
+        timeLeft--;
     }
     if (timeLeft==0){
-        status = FacilityStatus::OPERATIONAL;
+        setStatus(FacilityStatus::OPERATIONAL);
     }
     return status;
 }
@@ -69,9 +83,20 @@ const FacilityStatus& Facility::getStatus() const {
 }
 
 
-
-
 //need to check in this toString what is best to return
 const string Facility::toString() const{
     return "Facility Name:" + name; 
  }
+
+const string Facility ::statusToString() const {
+    string statusToString;
+    switch (this->status) {
+         case FacilityStatus::OPERATIONAL:
+            statusToString = "OPERATIONAL";
+            break;
+        case FacilityStatus::UNDER_CONSTRUCTIONS:
+            statusToString = "UNDER_CONSTRUCTIONS";
+            break;
+    }
+    return statusToString;
+}

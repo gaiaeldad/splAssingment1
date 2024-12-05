@@ -8,7 +8,7 @@ Settlement::Settlement(const string &name, SettlementType type)
         case SettlementType::CITY: limit = 2; break;
         case SettlementType::METROPOLIS: limit = 3;
     }
-} //בנאי ריק דיפולטיבי סימןשאלה
+} 
 
  const string &Settlement::getName() const{
     return name;
@@ -20,9 +20,9 @@ Settlement::Settlement(const string &name, SettlementType type)
 
 string SettlementTypeToString(SettlementType type){
     switch (type){
-        case SettlementType::VILLAGE: return "Village";
-        case SettlementType::CITY: return "City";
-        case SettlementType::METROPOLIS: return "Metropolis";
+        case SettlementType::VILLAGE: return "0";
+        case SettlementType::CITY: return "1";
+        case SettlementType::METROPOLIS: return "2";
     }
     return "Unknown";
  }

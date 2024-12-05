@@ -1,6 +1,8 @@
 #include "Plan.h"
 #include "Facility.h"
 #include "SelectionPolicy.h"
+#include <vector>
+using std::vector;
 using std::cout;
 using std::endl;
 
@@ -21,37 +23,42 @@ const int  Plan:: getEnvironmentScore() const{
     return environment_score;
 }  
 
-void Plan::setSelectionPolicy(SelectionPolicy *selectionPolicy){
-    this->selectionPolicy = selectionPolicy;
-    // need to update last selected index 
-
-}   
-
-void Plan::step(){//need to check that this is correct and that we have all steps 
-    while ( status == PlanStatus::AVALIABLE){
-      const FacilityType &buildThis = this->selectionPolicy->selectFacility(facilityOptions);
-     underConstruction.push_back(new Facility(buildThis, this->settlement.getName()));//we need new here so need to delet after 
-        //כל עוד טפשר בחרנו פסיליטי והכנסנו לבנייה
-        if(underConstruction.size() == this->settlement.getLimit()){
-             this->status = PlanStatus::BUSY;
-         }
+void Plan::setSelectionPolicy(SelectionPolicy *selectionPolicy) {
+    if (this->selectionPolicy != selectionPolicy) {
+        delete this->selectionPolicy;//delete the curr selection policy
+        this->selectionPolicy = selectionPolicy;
     }
-    for (int i = 0; i < underConstruction.size(); ++i) {
+}
+ 
+void Plan::step(){
+    while ( status == PlanStatus::AVALIABLE){
+        FacilityType toBuild = selectionPolicy->selectFacility(facilityOptions);
+        Facility* buildFac = new Facility(toBuild, settlement.getName());
+        addFacility(buildFac);
+      
+        if (underConstruction.size() == static_cast<size_t>(this->settlement.getLimit())) {
+            this->status = PlanStatus::BUSY; 
+        }
+     }
+    // doing a step for all the facilities
+    for (size_t i = 0; i < underConstruction.size();){
         Facility* currFac = underConstruction[i];
-        currFac->step(); 
-        if (currFac->getStatus() == FacilityStatus::OPERATIONAL) {
-            facilities.push_back(currFac);  
-            // Remove the facility from underConstruction
-            delete currFac;                      
+        FacilityStatus currFacStat = currFac->step();
+        if (currFacStat == FacilityStatus::OPERATIONAL){
+            addFacility(currFac);
+            scoreUpdate(currFac);
             underConstruction.erase(underConstruction.begin() + i);
-            scoreUpdate(currFac);                
-            --i;                                  
+        }
+        else{
+            i++;
         }
     }
-    if (underConstruction.size() < this->settlement.getLimit()) {
+    //update plan if its avalibal
+    if (underConstruction.size() < static_cast<size_t>(this->settlement.getLimit())){
         this->status = PlanStatus::AVALIABLE;
     }
 }
+
 
 void Plan::scoreUpdate(Facility* facility){
     this->life_quality_score += facility->getLifeQualityScore();
@@ -72,7 +79,12 @@ const vector<Facility*>& Plan::getFacilities() const{
 }
 
 void  Plan::addFacility(Facility* facility){ 
-    facilities.push_back(facility);
+    if(facility->getStatus() == FacilityStatus::OPERATIONAL){
+            facilities.push_back(facility);
+    }
+    else{
+        underConstruction.push_back(facility);
+    }  
 }
           
     const string Plan::toString() const {
@@ -89,25 +101,35 @@ void  Plan::addFacility(Facility* facility){
     ans += "LifeQualityScore: " + std::to_string(life_quality_score) + "\n";
     ans += "EconomyScore: " + std::to_string(economy_score) + "\n"; 
     ans += "EnvironmentScore: " + std::to_string(environment_score) + "\n";
-
-    // Print  The Facility details
-    for (const Facility* facility: facilities) {
-        ans += "FacilityName: " + facility->toString() + "\n";  
-        if (facility->getStatus() == FacilityStatus::UNDER_CONSTRUCTIONS) {
-            ans += "FacilityStatus: UNDER_CONSTRUCTIONS\n";
-        } else if (facility->getStatus() == FacilityStatus::OPERATIONAL) {
-            ans += "FacilityStatus: OPERATIONAL\n";
-        }
+    
+     ans +=  "\n";
+    for (Facility* facility : underConstruction) {
+        ans += "Facility Name: " + facility->getName() + "\n";
+        ans += "Facility Status: " + facility->statusToString() + "\n";
     }
-
+    ans += "\n";
+    for (Facility* facility : facilities) {
+        ans += "Facility Name: " + facility->getName() + "\n";
+        ans += "Facility Status: " + facility->statusToString() + "\n";
+    }
     return ans;
  }       
 
-    int Plan::getPlanID(){
-        return plan_id;
-    }
+ const string Plan::closeToString() const {
+    string ans = "PlanID: " + std::to_string(plan_id) + "\n";
+    ans += "SettlementName: " + settlement.getName() + "\n"; 
+    ans += "LifeQualityScore: " + std::to_string(life_quality_score) + "\n";
+    ans += "EconomyScore: " + std::to_string(economy_score) + "\n"; 
+    ans += "EnvironmentScore: " + std::to_string(environment_score) + "\n";
+    return ans;
 
-// role of 3:
+ }
+
+const int Plan::getPlanID() const{
+    return plan_id;
+ }
+
+// role of 5:
     //copy constractur
 Plan::Plan(const Plan &other):
     plan_id(other.plan_id),
@@ -126,6 +148,8 @@ Plan::Plan(const Plan &other):
         facilities.push_back(new Facility(*facility));
     }
 }
+
+
 //copy assingment operator
 Plan& Plan::operator=(const Plan &other) {//new implemntation shaked 
     if (this != &other) {
@@ -159,10 +183,62 @@ Plan& Plan::operator=(const Plan &other) {//new implemntation shaked
     return *this;
 }
 
+// move constractor
+Plan::Plan(Plan &&other): Plan(other.plan_id, other.settlement, other.selectionPolicy, other.facilityOptions){
+    status = other.status;
+    life_quality_score = other.getlifeQualityScore();
+    economy_score = other.getEconomyScore();
+    environment_score = other.getEnvironmentScore();
+    //deep copy facilitys
+    facilities.clear();
+    for (Facility* facility : other.facilities) {
+        addFacility(facility);
+    }
+     other.facilities.clear(); 
+    // deep copy underConstruction
+    underConstruction.clear();
+    for (Facility* facility : other.underConstruction) {
+        addFacility(facility);
+    }
+    other.underConstruction.clear();    
+    other.selectionPolicy = nullptr; 
+}
+
+// Move Assignment Operator
+Plan& Plan::operator=(Plan &&other) {
+    if (this != &other) {
+        plan_id = other.plan_id;
+        status = other.status;
+        life_quality_score = other.life_quality_score;
+        economy_score = other.economy_score;
+        environment_score = other.environment_score;
+        
+        if (selectionPolicy) {
+            delete selectionPolicy;
+        }
+        selectionPolicy = other.selectionPolicy;
+        other.selectionPolicy = nullptr;
+
+        facilities.clear();
+        for (Facility* facility : other.facilities) {
+            addFacility(facility);
+        }
+        other.facilities.clear();
+        underConstruction.clear();
+        for (Facility* facility : other.underConstruction) {
+            addFacility(facility);
+        }
+        other.underConstruction.clear();
+    }
+    return *this;
+}
+
 
 //Destractor
 Plan::~Plan() {
-    delete selectionPolicy;
+    if (selectionPolicy != nullptr) {
+        delete selectionPolicy;
+    }
     for (Facility* facility : facilities) {
         delete facility;
     }
@@ -213,4 +289,20 @@ bool Plan::ChangeSelectionPolicy(const string newPolicy){//we added this method
     }else {
         return false;
     }
+}
+
+Settlement Plan:: getSettlement(){
+    return settlement;
+}
+
+ PlanStatus Plan:: getStatus(){
+    return status;
+ }
+
+ SelectionPolicy*  Plan:: getSelectionPolicySP() const {
+    return selectionPolicy->clone();
+}
+
+const vector<FacilityType>& Plan::getFacilityOptions() const {
+    return facilityOptions;
 }

@@ -8,7 +8,7 @@ clean:
 
 link:
 	@echo "Linking Object files"
-	g++ -o  bin/simulation bin/settlement.o bin/main.o bin/Auxiliary.o bin/Faciliy.o bin/SelectionPolicy.o bin/plan.o bin/Simulation.o bin/Action.o
+	g++ -o  bin/simulation bin/settlement.o bin/main.o bin/Auxiliary.o bin/Facility.o bin/SelectionPolicy.o bin/plan.o bin/Simulation.o bin/Action.o
 
 compile: 
 	@echo "Compiling source code"
