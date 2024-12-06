@@ -105,7 +105,16 @@ const string Facility ::statusToString() const {//we added this method
 //Rule Of 3:
 // Copy constructor
 Facility::Facility(const Facility &other)
-:Facility(other.name, other.settlementName,other.category, other.price, other.lifeQuality_score,other.economy_score,other.environment_score){}
+:Facility(other.name, other.settlementName,other.category, other.price, other.lifeQuality_score,other.economy_score,other.environment_score){
+    if(other.status == FacilityStatus::UNDER_CONSTRUCTIONS){
+        status = FacilityStatus::UNDER_CONSTRUCTIONS;
+    }
+    else{
+        status = FacilityStatus::OPERATIONAL;
+    }
+    timeLeft = other.timeLeft;
+}
+
 
 // Copy assignment operator
 Facility &Facility::operator=(const Facility &other){
