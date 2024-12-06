@@ -2,7 +2,7 @@
 
 
 Settlement::Settlement(const string &name, SettlementType type)
-:name(name), type(type){
+:name(name), type(type),limit(){
    switch (type){
         case SettlementType::VILLAGE: limit = 1; break;
         case SettlementType::CITY: limit = 2; break;

@@ -10,7 +10,7 @@ class SelectionPolicy {
         virtual const string toString() const = 0;
         virtual SelectionPolicy* clone() const = 0;
         virtual ~SelectionPolicy() = default;
-        static SelectionPolicy* createNewSP(const string& selectionPolicyType); //we added
+        static SelectionPolicy* createNewSP(const string& selectionPolicyType); //we added this method 
 };
 
 class NaiveSelection: public SelectionPolicy {
@@ -32,8 +32,8 @@ class BalancedSelection: public SelectionPolicy {
         const string toString() const override;
         BalancedSelection *clone() const override;
         ~BalancedSelection() override = default;
-        int findDiff(const FacilityType& FacilityCand);
-        void setScores(int Curr_Life, int Curr_Econmy, int Curr_Env);
+        int findDiff(const FacilityType& FacilityCand);//i think we added this 
+        void setScores(int Curr_Life, int Curr_Econmy, int Curr_Env);//i this we added this 
 
     private:
         int LifeQualityScore;

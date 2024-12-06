@@ -9,7 +9,7 @@ using std::endl;
 
 
  Plan:: Plan(const int planId, const Settlement &settlement, SelectionPolicy *selectionPolicy, const vector<FacilityType> &facilityOptions)
- :plan_id(planId), settlement(settlement), selectionPolicy(selectionPolicy),status(PlanStatus:: AVALIABLE),facilityOptions(facilityOptions),
+ :plan_id(planId), settlement(settlement), selectionPolicy(selectionPolicy),status(PlanStatus:: AVALIABLE),facilities(),underConstruction(),facilityOptions(facilityOptions),
  life_quality_score(0), economy_score(0), environment_score(0){}
 
  const int Plan:: getlifeQualityScore() const{
@@ -53,26 +53,19 @@ void Plan::step(){
             i++;
         }
     }
-    //update plan if its avalibal
+    //update plan if is AVALIABLE 
     if (underConstruction.size() < static_cast<size_t>(this->settlement.getLimit())){
         this->status = PlanStatus::AVALIABLE;
     }
 }
 
-
-void Plan::scoreUpdate(Facility* facility){
-    this->life_quality_score += facility->getLifeQualityScore();
-    this->economy_score += facility->getEconomyScore();
-    this->environment_score += facility->getEnvironmentScore();
-}
-
- void Plan::printStatus(){
+void Plan::printStatus(){
   if (status == PlanStatus::AVALIABLE) {
     cout << "plan id: " + std::to_string(plan_id) + "settlement: " + settlement.getName() +  "Status: Available" << endl;
 } else {
     cout << "Status: Busy" << endl;
 }
- }
+}
 
 const vector<Facility*>& Plan::getFacilities() const{
        return facilities;
@@ -86,7 +79,7 @@ void  Plan::addFacility(Facility* facility){
         underConstruction.push_back(facility);
     }  
 }
-          
+
     const string Plan::toString() const {
     string ans = "PlanID: " + std::to_string(plan_id) + "\n";
     ans += "SettlementName: " + settlement.getName() + "\n"; 
@@ -102,12 +95,10 @@ void  Plan::addFacility(Facility* facility){
     ans += "EconomyScore: " + std::to_string(economy_score) + "\n"; 
     ans += "EnvironmentScore: " + std::to_string(environment_score) + "\n";
     
-     ans +=  "\n";
     for (Facility* facility : underConstruction) {
         ans += "Facility Name: " + facility->getName() + "\n";
         ans += "Facility Status: " + facility->statusToString() + "\n";
     }
-    ans += "\n";
     for (Facility* facility : facilities) {
         ans += "Facility Name: " + facility->getName() + "\n";
         ans += "Facility Status: " + facility->statusToString() + "\n";
@@ -124,18 +115,72 @@ void  Plan::addFacility(Facility* facility){
     return ans;
 
  }
+ void Plan::scoreUpdate(Facility* facility){
+    this->life_quality_score += facility->getLifeQualityScore();
+    this->economy_score += facility->getEconomyScore();
+    this->environment_score += facility->getEnvironmentScore();
+}
 
 const int Plan::getPlanID() const{
     return plan_id;
  }
+ Settlement Plan:: getSettlement(){//maybe delet 
+    return settlement;
+}
+ PlanStatus Plan:: getStatus(){//maybe delete 
+    return status;
+ }
+string Plan::getSelectionPolicy() const {
+    if (dynamic_cast<NaiveSelection*>(selectionPolicy)) {
+        return "nve";
+    } else if (dynamic_cast<BalancedSelection*>(selectionPolicy)) {
+        return "bal";
+    } else if (dynamic_cast<EconomySelection*>(selectionPolicy)) {
+        return "eco";
+    } else if (dynamic_cast<SustainabilitySelection*>(selectionPolicy)) {
+        return "env";
+    }
+    return "unknown selection Policy";
+}
+bool Plan::ChangeSelectionPolicy(const string newPolicy){//we added this method 
+    if (newPolicy == "eco") {
+        setSelectionPolicy(new EconomySelection());
+        return true; 
+        } else if (newPolicy == "nve") {
+        setSelectionPolicy(new NaiveSelection());
+        return true;
+    } else if (newPolicy == "env") {
+        setSelectionPolicy(new SustainabilitySelection());
+        return true;
+    } else if (newPolicy == "bal") {
+        int newEcoScore = getEconomyScore();
+        int newLifeScore = getlifeQualityScore();
+        int newEnvDcore = getEnvironmentScore();
+        for (Facility* FcilityUnderConstruction : underConstruction){
+            newLifeScore += FcilityUnderConstruction->getLifeQualityScore();
+            newEcoScore += FcilityUnderConstruction->getEconomyScore();
+            newEnvDcore += FcilityUnderConstruction->getEnvironmentScore();
+        }
+        setSelectionPolicy (new BalancedSelection (newLifeScore, newEcoScore, newEnvDcore));
+        return true;    
+    }else {
+        return false;
+    }
+}
 
-// role of 5:
-    //copy constractur
+const vector<FacilityType>& Plan::getFacilityOptions() const {//maybe delete 
+    return facilityOptions;
+}
+
+// Rule of 5:
+//copy Constructor
 Plan::Plan(const Plan &other):
     plan_id(other.plan_id),
     settlement(other.settlement),
     selectionPolicy(other.selectionPolicy ? other.selectionPolicy->clone() : nullptr),// Deep copy of selectionPolicy
     status(other.status),
+    facilities(),
+    underConstruction(),
     facilityOptions(other.facilityOptions),
     life_quality_score(other.life_quality_score),
     economy_score(other.economy_score),
@@ -150,14 +195,13 @@ Plan::Plan(const Plan &other):
 }
 
 
-//copy assingment operator
-Plan& Plan::operator=(const Plan &other) {//new implemntation shaked 
+//Copy Assingment Operator
+Plan& Plan::operator=(const Plan &other) { 
     if (this != &other) {
         // Allocate new resources for  selectionPolicy
         SelectionPolicy* tempPolicy = other.selectionPolicy->clone();
         delete selectionPolicy;// Delete old resources
         selectionPolicy = tempPolicy;// Assign new resources
-        // Assign scalar and simple values
         plan_id = other.plan_id;
         status = other.status;
         life_quality_score = other.life_quality_score;
@@ -183,26 +227,21 @@ Plan& Plan::operator=(const Plan &other) {//new implemntation shaked
     return *this;
 }
 
-// move constractor
-Plan::Plan(Plan &&other): Plan(other.plan_id, other.settlement, other.selectionPolicy, other.facilityOptions){
-    status = other.status;
-    life_quality_score = other.getlifeQualityScore();
-    economy_score = other.getEconomyScore();
-    environment_score = other.getEnvironmentScore();
-    //deep copy facilitys
-    facilities.clear();
-    for (Facility* facility : other.facilities) {
-        addFacility(facility);
-    }
-     other.facilities.clear(); 
-    // deep copy underConstruction
-    underConstruction.clear();
-    for (Facility* facility : other.underConstruction) {
-        addFacility(facility);
-    }
-    other.underConstruction.clear();    
-    other.selectionPolicy = nullptr; 
+// move Constructor//i changed this 
+Plan::Plan(Plan &&other)
+    : plan_id(other.plan_id),
+      settlement(std::move(other.settlement)),
+      selectionPolicy(other.selectionPolicy),
+      status(other.status),
+      facilities(std::move(other.facilities)), 
+      underConstruction(std::move(other.underConstruction)),
+      facilityOptions(std::move(other.facilityOptions)),
+      life_quality_score(other.life_quality_score),
+      economy_score(other.economy_score),
+      environment_score(other.environment_score){
+    other.selectionPolicy = nullptr; // Nullify to prevent double deletion
 }
+
 
 // Move Assignment Operator
 Plan& Plan::operator=(Plan &&other) {
@@ -250,59 +289,20 @@ Plan::~Plan() {
 }
 
 
-
-string Plan::getSelectionPolicy() const {
-    if (dynamic_cast<NaiveSelection*>(selectionPolicy)) {
-        return "nve";
-    } else if (dynamic_cast<BalancedSelection*>(selectionPolicy)) {
-        return "bal";
-    } else if (dynamic_cast<EconomySelection*>(selectionPolicy)) {
-        return "eco";
-    } else if (dynamic_cast<SustainabilitySelection*>(selectionPolicy)) {
-        return "env";
+//copy constructor helper from copy constructor of simulation 
+Plan::Plan(const Settlement &settlement, const Plan &other):Plan(other.plan_id, settlement, other.selectionPolicy->clone(), other.facilityOptions){
+    status = other.status;
+    life_quality_score = other.getlifeQualityScore();
+    economy_score = other.getEconomyScore();
+    environment_score = other.getEnvironmentScore();
+     // Deep copy of facilities
+    for (Facility* facility : other.facilities) {
+        facilities.push_back(new Facility(*facility)); // Copy each Facility
     }
-    return "unknown selection Policy";
-}
 
-
-bool Plan::ChangeSelectionPolicy(const string newPolicy){//we added this method 
-    if (newPolicy == "eco") {
-        setSelectionPolicy(new EconomySelection());
-        return true; 
-        } else if (newPolicy == "nve") {
-        setSelectionPolicy(new NaiveSelection());
-        return true;
-    } else if (newPolicy == "env") {
-        setSelectionPolicy(new SustainabilitySelection());
-        return true;
-    } else if (newPolicy == "bal") {
-        int newEcoScore = getEconomyScore();
-        int newLifeScore = getlifeQualityScore();
-        int newEnvDcore = getEnvironmentScore();
-        for (Facility* FcilityUnderConstruction : underConstruction){
-            newLifeScore += FcilityUnderConstruction->getLifeQualityScore();
-            newEcoScore += FcilityUnderConstruction->getEconomyScore();
-            newEnvDcore += FcilityUnderConstruction->getEnvironmentScore();
-        }
-        setSelectionPolicy (new BalancedSelection (newLifeScore, newEcoScore, newEnvDcore));
-        return true;    
-    }else {
-        return false;
+    // Deep copy of underConstruction
+    for (Facility* facility : other.underConstruction) {
+        underConstruction.push_back(new Facility(*facility)); // Copy each Facility
     }
-}
 
-Settlement Plan:: getSettlement(){
-    return settlement;
-}
-
- PlanStatus Plan:: getStatus(){
-    return status;
- }
-
- SelectionPolicy*  Plan:: getSelectionPolicySP() const {
-    return selectionPolicy->clone();
-}
-
-const vector<FacilityType>& Plan::getFacilityOptions() const {
-    return facilityOptions;
 }

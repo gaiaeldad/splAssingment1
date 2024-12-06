@@ -2,8 +2,9 @@
 #include <string>
 #include <vector>
 using std::string;
-using std::vector; ///צריך סימןשאלהה
-//facility type
+using std::vector; 
+
+//Facility type
 FacilityType::FacilityType(const string &name, const FacilityCategory category, const int price, const int lifeQuality_score, const int economy_score, const int environment_score)
 :name(name), category(category), price(price), lifeQuality_score(lifeQuality_score), economy_score(economy_score), environment_score(environment_score){
 }
@@ -34,8 +35,11 @@ int FacilityType::getEconomyScore() const{
 
   //Rule Of 3:
 // Copy constructor
-FacilityType::FacilityType(const FacilityType &other)
-:FacilityType(other.name, other.category, other.price, other.lifeQuality_score,other.economy_score,other.environment_score){}
+FacilityType::FacilityType(const FacilityType &other)//shaked changed this 
+:name(other.name), category(other.category), price(other.price), 
+          lifeQuality_score(other.lifeQuality_score), 
+          economy_score(other.economy_score), 
+          environment_score(other.environment_score) {}
 
 // Copy assignment operator
 FacilityType &FacilityType::operator=(const FacilityType &other){
@@ -43,7 +47,6 @@ FacilityType &FacilityType::operator=(const FacilityType &other){
 }
 // Destructor: 
 FacilityType::~FacilityType(){
-
 }
 
 //faciltiy
@@ -82,13 +85,11 @@ const FacilityStatus& Facility::getStatus() const {
     return status;
 }
 
-
-//need to check in this toString what is best to return
 const string Facility::toString() const{
     return "Facility Name:" + name; 
  }
 
-const string Facility ::statusToString() const {
+const string Facility ::statusToString() const {//we added this method 
     string statusToString;
     switch (this->status) {
          case FacilityStatus::OPERATIONAL:
@@ -99,4 +100,14 @@ const string Facility ::statusToString() const {
             break;
     }
     return statusToString;
+}
+
+//Rule Of 3:
+// Copy constructor
+Facility::Facility(const Facility &other)
+:Facility(other.name, other.settlementName,other.category, other.price, other.lifeQuality_score,other.economy_score,other.environment_score){}
+
+// Copy assignment operator
+Facility &Facility::operator=(const Facility &other){
+    return *this;
 }

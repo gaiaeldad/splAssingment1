@@ -14,19 +14,19 @@
 
     class BaseAction{
         public:
-            BaseAction();// need to implement and need to see how 
-            ActionStatus getStatus() const;//yes 
+            BaseAction();
+            ActionStatus getStatus() const;
             virtual void act(Simulation& simulation)=0;//only in the devhired classes 
             virtual const string toString() const=0;
             virtual BaseAction* clone() const = 0;
             virtual ~BaseAction() = default;
-            virtual string toPrintLog () const =0; // we added
-            string StatusToString() const; // we added
+            virtual string toPrintLog () const =0; // we added this 
+            string StatusToString() const; // we added this 
 
         protected:
-            void complete();//yes 
-            void error(string errorMsg);//yes 
-            const string &getErrorMsg() const;//yes 
+            void complete();
+            void error(string errorMsg); 
+            const string &getErrorMsg() const; 
 
         private:
             string errorMsg;
@@ -36,22 +36,22 @@
     class SimulateStep : public BaseAction {
 
         public:
-            SimulateStep(const int numOfSteps);//yes 
-            void act(Simulation &simulation) override;//yes 
-            const string toString() const override;//yes 
-            SimulateStep *clone() const override;//yes 
-            string toPrintLog () const override; // we added
+            SimulateStep(const int numOfSteps);
+            void act(Simulation &simulation) override;
+            const string toString() const override;
+            SimulateStep *clone() const override; 
+            string toPrintLog () const override; // we added this 
         private:
             const int numOfSteps;
     };
 
     class AddPlan : public BaseAction {
         public:
-            AddPlan(const string &settlementName, const string &selectionPolicy);//yes
-            void act(Simulation &simulation) override;//dont know how 
-            const string toString() const override;//yes
-            AddPlan *clone() const override;//yes 
-            string toPrintLog () const override; // we added
+            AddPlan(const string &settlementName, const string &selectionPolicy);
+            void act(Simulation &simulation) override;
+            const string toString() const override;
+            AddPlan *clone() const override;
+            string toPrintLog () const override; // we added this 
         private:
             const string settlementName;
             const string selectionPolicy;
@@ -60,11 +60,11 @@
 
     class AddSettlement : public BaseAction {
         public:
-            AddSettlement(const string &settlementName,SettlementType settlementType);//yes
-            void act(Simulation &simulation) override;//yes
-            AddSettlement *clone() const override;//yes
-            const string toString() const override;//yes
-            string toPrintLog () const override; // we added
+            AddSettlement(const string &settlementName,SettlementType settlementType);
+            void act(Simulation &simulation) override;
+            AddSettlement *clone() const override;
+            const string toString() const override;
+            string toPrintLog () const override; // we added this 
         private:
             const string settlementName;
             const SettlementType settlementType;
@@ -75,10 +75,10 @@
     class AddFacility : public BaseAction {
         public:
             AddFacility(const string &facilityName, const FacilityCategory facilityCategory, const int price, const int lifeQualityScore, const int economyScore, const int environmentScore);//yes
-            void act(Simulation &simulation) override;//we have a problem with the constructor because dont have settelement 
-            AddFacility *clone() const override;//yes 
-            const string toString() const override;//yes 
-            string toPrintLog () const override; // we added
+            void act(Simulation &simulation) override;
+            AddFacility *clone() const override;
+            const string toString() const override; 
+            string toPrintLog () const override; // we added this 
         private:
             const string facilityName;
             const FacilityCategory facilityCategory;
@@ -91,11 +91,11 @@
 
 class PrintPlanStatus: public BaseAction {
         public:
-            PrintPlanStatus(int planId);// yes
-            void act(Simulation &simulation) override; // yes
-            PrintPlanStatus *clone() const override; // yes
-            const string toString() const override; // yes
-            string toPrintLog () const override; // we added
+            PrintPlanStatus(int planId);
+            void act(Simulation &simulation) override;
+            PrintPlanStatus *clone() const override;
+            const string toString() const override; 
+            string toPrintLog () const override; // we added this 
         private:
             const int planId;
     };
@@ -103,11 +103,11 @@ class PrintPlanStatus: public BaseAction {
 
     class ChangePlanPolicy : public BaseAction {
         public:
-            ChangePlanPolicy(const int planId, const string &newPolicy);//yes
-            void act(Simulation &simulation) override;//yes 
-            ChangePlanPolicy *clone() const override;//yes
-            const string toString() const override;//yes 
-            string toPrintLog () const override; // we added
+            ChangePlanPolicy(const int planId, const string &newPolicy);
+            void act(Simulation &simulation) override;
+            ChangePlanPolicy *clone() const override;
+            const string toString() const override; 
+            string toPrintLog () const override; // we added this 
         private:
             const int planId;
             const string newPolicy;
@@ -118,40 +118,40 @@ class PrintPlanStatus: public BaseAction {
     class PrintActionsLog : public BaseAction {
         public:
             PrintActionsLog();//yes 
-            void act(Simulation &simulation) override; //. yes
-            PrintActionsLog *clone() const override; // yes
-            const string toString() const override; //yes
-            string toPrintLog () const override; // we added 
+            void act(Simulation &simulation) override; 
+            PrintActionsLog *clone() const override; 
+            const string toString() const override; 
+            string toPrintLog () const override; // we added this  
         private:
     };
 
     class Close : public BaseAction {
         public:
-            Close(); // yes
-            void act(Simulation &simulation) override; // yes
-            Close *clone() const override; // yes
-            const string toString() const override; // yes
-            string toPrintLog () const override; // we added
+            Close(); 
+            void act(Simulation &simulation) override;
+            Close *clone() const override; 
+            const string toString() const override;
+            string toPrintLog () const override; // we added this 
         private:
     };
 
     class BackupSimulation : public BaseAction {
         public:
-            BackupSimulation();// yes
-            void act(Simulation &simulation) override; //yes
-            BackupSimulation *clone() const override; //yes
-            const string toString() const override; // yes
-            string toPrintLog () const override; // we added
+            BackupSimulation();
+            void act(Simulation &simulation) override; 
+            BackupSimulation *clone() const override;
+            const string toString() const override; 
+            string toPrintLog () const override; // we added this 
         private:
     };
 
 
     class RestoreSimulation : public BaseAction {
         public:
-            RestoreSimulation(); //yes
-            void act(Simulation &simulation) override; //yes
-            RestoreSimulation *clone() const override;//yes
-            const string toString() const override; //yes
-            string toPrintLog () const override; // we added
+            RestoreSimulation(); 
+            void act(Simulation &simulation) override; 
+            RestoreSimulation *clone() const override;
+            const string toString() const override; 
+            string toPrintLog () const override; // we added this 
         private:
     };

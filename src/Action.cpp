@@ -1,4 +1,4 @@
-#pragma once
+
 #include <string>
 #include <vector>
 #include "Simulation.h"
@@ -33,6 +33,7 @@ string BaseAction::StatusToString () const {//our method
         case ActionStatus::ERROR:
             return "ERROR";
     }
+    return "UNKNOWN";
 }
 
 
@@ -63,7 +64,7 @@ SimulateStep* SimulateStep :: clone() const{
      return "step: " + std::to_string(numOfSteps) + " " + StatusToString();
  }
 
-// add plan
+// Add Plan
 AddPlan::AddPlan(const string &settlementName, const string &selectionPolicy):BaseAction(), settlementName(settlementName) ,selectionPolicy(selectionPolicy){
 }
 
@@ -128,7 +129,7 @@ string AddSettlement:: toPrintLog () const{
      return "settelment " + settlementName + " " + SettlementTypeToString(settlementType) + " "  + StatusToString();
  }
 
-//AddFacility 
+//Add Facility 
 
 AddFacility::AddFacility(const string &facilityName, const FacilityCategory facilityCategory, const int price, const int lifeQualityScore, const int economyScore, const int environmentScore):
 BaseAction(), facilityName(facilityName) ,facilityCategory(facilityCategory), price(price), lifeQualityScore(lifeQualityScore), economyScore(economyScore),environmentScore(environmentScore){}
@@ -222,8 +223,8 @@ void ChangePlanPolicy::act(Simulation &simulation){
         error("Selection Policy invalid");
         simulation.addAction(this->clone());
     }
-    currplan.ChangeSelectionPolicy(newPolicy);//might need to update last selected index 
     PrevPolicy = CurrPoli;
+    cout <<  ChangePlanPolicy::toString() << endl;
     complete();
     simulation.addAction(this->clone());
 }
@@ -231,15 +232,15 @@ ChangePlanPolicy* ChangePlanPolicy::clone() const {
     return new ChangePlanPolicy(*this);
 }
 const string ChangePlanPolicy:: toString() const{
-    return "ChangePlanPolicy: PlanID = " + std::to_string(planId) + 
-           ", Previous Policy = " + PrevPolicy + 
-           ", New Policy = " + newPolicy;
+    return "planId: " + std::to_string(planId) + "\n"
+           "previousPolicy: " + PrevPolicy + "\n"
+           "newPolicy: " + newPolicy;
 }
 string ChangePlanPolicy:: toPrintLog () const {
-     return "changePolicy " + std::to_string(planId) + " "  + newPolicy + StatusToString();
+     return "changePolicy " + std::to_string(planId) + " "  + newPolicy + " " + StatusToString();
  }
 
-//Print Action Log 
+//Print Actions Log 
 
 PrintActionsLog::PrintActionsLog():BaseAction(){}
 
@@ -263,7 +264,7 @@ PrintActionsLog* PrintActionsLog::clone() const {
     return "PrintActionsLog " + StatusToString();
  }
 
- //close
+ //Close
  Close::Close():BaseAction(){}
 
  void Close:: act(Simulation &simulation){
@@ -290,7 +291,9 @@ void BackupSimulation::act(Simulation &simulation) {
     if (backup != nullptr) {
         *backup = simulation; 
     }
-    backup = new Simulation(simulation);
+    else{
+        backup = new Simulation(simulation);
+    }
     complete();
     simulation.addAction(this->clone());
 }

@@ -23,7 +23,7 @@ NaiveSelection* NaiveSelection:: clone() const {
 }
 
 
-//need to wrtie the balnced 
+//Balanced Selection 
  BalancedSelection:: BalancedSelection(int LifeQualityScore, int EconomyScore, int EnvironmentScore):
  LifeQualityScore(LifeQualityScore), EconomyScore(EconomyScore), EnvironmentScore(EnvironmentScore){
  }
@@ -44,6 +44,13 @@ const FacilityType& BalancedSelection:: selectFacility(const vector<FacilityType
     return *selectedFacility; 
 }
 
+const std::string BalancedSelection::toString() const {
+    return "bal";
+}
+
+BalancedSelection* BalancedSelection:: clone() const { 
+    return new BalancedSelection(*this);
+}
 int BalancedSelection ::findDiff (const FacilityType& FacilityCand){
     int SumLifeQualityScore = this->LifeQualityScore + FacilityCand.getLifeQualityScore();
     int SumEconomyScore = this->EconomyScore + FacilityCand.getEconomyScore();
@@ -53,23 +60,14 @@ int BalancedSelection ::findDiff (const FacilityType& FacilityCand){
     return  maxScore - minScore;
 }
 
-const std::string BalancedSelection::toString() const {
-    return "bal";
-}
-
-BalancedSelection* BalancedSelection:: clone() const { 
-    return new BalancedSelection(*this);
-}
-
-
-void BalancedSelection ::setScores(int Curr_Life, int Curr_Econmy, int Curr_Env){/// צריכה קבל גם מה שבבניה
+void BalancedSelection ::setScores(int Curr_Life, int Curr_Econmy, int Curr_Env){
     LifeQualityScore = Curr_Life;
     EconomyScore =  Curr_Econmy;
     EnvironmentScore = Curr_Env;
 }
 
 
-// EconomySelection 
+// Economy Selection 
 EconomySelection:: EconomySelection(): lastSelectedIndex(-1){}
 
 const FacilityType& EconomySelection:: selectFacility(const vector<FacilityType>& facilitiesOptions) {
@@ -97,7 +95,7 @@ EconomySelection* EconomySelection:: clone() const {
 }
     
 
-// SustainabilitySelection 
+// Sustainability Selection 
 SustainabilitySelection:: SustainabilitySelection(): lastSelectedIndex(-1){}
 
 const FacilityType& SustainabilitySelection:: selectFacility(const vector<FacilityType>& facilitiesOptions) {
@@ -111,6 +109,7 @@ const FacilityType& SustainabilitySelection:: selectFacility(const vector<Facili
         }
         currentIndex = (currentIndex + 1) % size; 
     }
+    throw std::runtime_error("No facility of ENVIRONMENT category found.");
 }
 
 const std::string SustainabilitySelection::toString() const{
@@ -121,14 +120,17 @@ SustainabilitySelection* SustainabilitySelection:: clone() const {
     return new SustainabilitySelection(*this);
 }
 
-// helper metodes we added
+// helper method we added
 SelectionPolicy* SelectionPolicy::createNewSP(const string& selectionPolicyType){
     SelectionPolicy* policy = nullptr;
-    if (selectionPolicyType == "eco") {
+    if (selectionPolicyType == "nve") {
+        policy = new NaiveSelection();
+    }
+    else if (selectionPolicyType == "eco") {
         policy = new EconomySelection();
     } else if (selectionPolicyType == "bal") {
         policy = new BalancedSelection(0, 0, 0);
-    } else if (selectionPolicyType == "sus") {
+    } else if (selectionPolicyType == "env") {
         policy = new SustainabilitySelection();
     } else {
 

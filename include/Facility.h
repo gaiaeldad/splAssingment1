@@ -52,6 +52,10 @@ class Facility: public FacilityType {
         const FacilityStatus& getStatus() const;
         const string toString() const;
         const string statusToString() const ; // we added
+         //Rull of 3:
+        Facility(const Facility &other); // we added copy constractur
+        Facility &operator=(const Facility &other); // we added copy assingment operator
+        ~Facility() = default;
 
 
     private:
